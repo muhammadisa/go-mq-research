@@ -39,7 +39,7 @@ func main() {
 
 	Ack	:
 	Will remove the message from queue, even DLX is configured, because
-	it Acknowleged positively
+	the Message Acknowleged positively
 
 	**/
 
