@@ -4,23 +4,29 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/muhammadisa/go-mq-notification/gorabbitmq"
+	"github.com/muhammadisa/gorabbitmq"
 	"github.com/streadway/amqp"
 )
 
-func main() {
-	fmt.Println("Message Queue Notification")
+func handlerError(err error, panicking bool) {
+	if err != nil {
+		fmt.Println(err)
+		if panicking {
+			panic(err)
+		}
+	}
+}
 
+func main() {
 	connection, channel, err := gorabbitmq.Connector{
 		Username: "guest",
 		Password: "guest",
 		Host:     "localhost",
 		Port:     "5672",
 	}.Dial()
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	handlerError(err, true)
+	defer connection.Close()
+	defer channel.Close()
 
 	var iteration = 0
 	forever := make(chan bool)
@@ -28,6 +34,7 @@ func main() {
 		for true {
 			iteration++
 			message := fmt.Sprintf("Message number %d", iteration)
+
 			err = gorabbitmq.Message{
 				ExchangeName: "email_exchanges.fanout",
 				ExchangeKey:  "email.*",
@@ -38,17 +45,11 @@ func main() {
 					Body:        []byte(message),
 				},
 			}.Publish(channel)
-			if err != nil {
-				fmt.Println(err)
-				panic(err)
-			}
-			fmt.Println(fmt.Sprintf("Message Sent : %s\n", message))
+			handlerError(err, true)
+
+			fmt.Println(fmt.Sprintf("Message Sent : %s", message))
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
 	<-forever
-
-	defer connection.Close()
-	defer channel.Close()
-
 }

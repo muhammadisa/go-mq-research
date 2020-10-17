@@ -3,22 +3,28 @@ package main
 import (
 	"fmt"
 
-	"github.com/muhammadisa/go-mq-notification/gorabbitmq"
+	"github.com/muhammadisa/gorabbitmq"
 )
 
-func main() {
-	fmt.Println("Message Queue Notification")
+func handlerError(err error, panicking bool) {
+	if err != nil {
+		fmt.Println(err)
+		if panicking {
+			panic(err)
+		}
+	}
+}
 
+func main() {
 	connection, channel, err := gorabbitmq.Connector{
 		Username: "guest",
 		Password: "guest",
 		Host:     "localhost",
 		Port:     "5672",
 	}.Dial()
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	handlerError(err, true)
+	defer connection.Close()
+	defer channel.Close()
 
 	messagesCustomer, err := gorabbitmq.Queue{
 		QueueName: "customer",
@@ -29,10 +35,7 @@ func main() {
 		NoWait:    false,
 		Args:      nil,
 	}.Consume(channel)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	handlerError(err, true)
 
 	messagesDriver, err := gorabbitmq.Queue{
 		QueueName: "driver",
@@ -43,23 +46,30 @@ func main() {
 		NoWait:    false,
 		Args:      nil,
 	}.Consume(channel)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	handlerError(err, true)
 
-	forever := make(chan bool)
+	foreverCustomer := make(chan bool)
 	go func() {
 		for d := range messagesCustomer {
-			fmt.Println(fmt.Sprintf("Received Message From Customer : %s\n", d.Body))
-		}
+			fmt.Println(fmt.Sprintf("Received Message From Customer : %s", d.Body))
 
-		for d := range messagesDriver {
-			fmt.Println(fmt.Sprintf("Received Message From Driver : %s\n", d.Body))
+			// err := d.Ack(false)
+			// handlerError(err, false)
+			// fmt.Println(fmt.Sprintf("Message acknowledged message"))
 		}
 	}()
-	<-forever
 
-	defer connection.Close()
-	defer channel.Close()
+	foreverDriver := make(chan bool)
+	go func() {
+		for d := range messagesDriver {
+			fmt.Println(fmt.Sprintf("Received Message From Driver : %s", d.Body))
+
+			// err := d.Ack(false)
+			// handlerError(err, false)
+			// fmt.Println(fmt.Sprintf("Message acknowledged message\n"))
+		}
+	}()
+
+	<-foreverCustomer
+	<-foreverDriver
 }

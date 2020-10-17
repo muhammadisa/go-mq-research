@@ -1,2 +1,4 @@
+github.com/muhammadisa/gorabbitmq v1.0.0 h1:OKeD07cXRku05iOhJSumaNHhpm82j79LV0xf7/knFJE=
+github.com/muhammadisa/gorabbitmq v1.0.0/go.mod h1:C3IUpCUoj6BKWFydMoAUEnVkpk96gKB759awi47lluE=
 github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=
 github.com/streadway/amqp v1.0.0/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
