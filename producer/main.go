@@ -17,6 +17,10 @@ func handlerError(err error, panicking bool) {
 	}
 }
 
+func delay(milis int64) {
+	time.Sleep(time.Duration(milis) * time.Millisecond)
+}
+
 func main() {
 	connection, channel, err := gorabbitmq.Connector{
 		Username: "guest",
@@ -48,7 +52,7 @@ func main() {
 			handlerError(err, true)
 
 			fmt.Println(fmt.Sprintf("Message Sent : %s", message))
-			time.Sleep(500 * time.Millisecond)
+			delay(250)
 		}
 	}()
 	<-forever
