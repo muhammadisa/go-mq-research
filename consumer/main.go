@@ -54,7 +54,7 @@ func main() {
 	defer channel.Close()
 
 	messagesCustomer, err := gorabbitmq.Queue{
-		QueueName: "customer",
+		QueueName: "foobar",
 		Consumer:  "",
 		AutoAck:   false,
 		Exclusive: false,

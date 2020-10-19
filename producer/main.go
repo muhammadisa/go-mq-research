@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/muhammadisa/gorabbitmq"
@@ -32,27 +33,33 @@ func main() {
 	defer connection.Close()
 	defer channel.Close()
 
-	var iteration = 0
+	greetings := []string{
+		"Bonjour",
+		"Hola",
+		"Hello",
+		"Halo",
+		"Kon'nichiwa",
+		"Yeoboseyo",
+		"Ni Hao",
+		"Sawadikap",
+	}
 	forever := make(chan bool)
 	go func() {
 		for true {
-			iteration++
-			message := fmt.Sprintf("Message number %d", iteration)
-
+			greeting := fmt.Sprintf(`{"foobar_content":"%s"}`, greetings[rand.Intn(len(greetings))])
 			err = gorabbitmq.Message{
-				ExchangeName: "email_exchanges.fanout",
-				ExchangeKey:  "email.*",
+				ExchangeName: "foobar_exchanges",
+				ExchangeKey:  "",
 				Mandatory:    false,
 				Immediate:    false,
 				Msg: amqp.Publishing{
 					ContentType: gorabbitmq.TEXT,
-					Body:        []byte(message),
+					Body:        []byte(greeting),
 				},
 			}.Publish(channel)
 			handlerError(err, true)
-
-			fmt.Println(fmt.Sprintf("Message Sent : %s", message))
-			delay(250)
+			fmt.Println(greeting)
+			delay(1000)
 		}
 	}()
 	<-forever
